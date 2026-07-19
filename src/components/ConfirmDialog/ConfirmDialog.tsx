@@ -1,0 +1,184 @@
+import React, { useEffect, useCallback } from 'react';
+import { ModalInstance } from '../../types';
+import { modalManager } from '../../services/modalManager';
+
+export interface ConfirmDialogProps {
+  modal: ModalInstance;
+}
+
+export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({ modal }) => {
+  const {
+    id,
+    title,
+    message,
+    type = 'question',
+    confirmText = 'Confirm',
+    cancelText = 'Cancel',
+    onConfirm,
+    onCancel,
+    isLoading = false,
+    showCloseButton = true,
+  } = modal;
+
+  const handleCancel = useCallback(() => {
+    if (isLoading) return;
+    if (onCancel) {
+      onCancel();
+    } else {
+      modalManager.dismiss(id);
+    }
+  }, [id, onCancel, isLoading]);
+
+  const handleConfirm = useCallback(async () => {
+    if (isLoading) return;
+    if (onConfirm) {
+      try {
+        await onConfirm();
+      } catch (err) {
+        // Error is handled inside onConfirm or propagated.
+        // We catch it here to prevent uncaught promise errors in UI.
+      }
+    } else {
+      modalManager.dismiss(id);
+    }
+  }, [id, onConfirm, isLoading]);
+
+  // ENTER key to confirm (unless focused on the cancel button)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Enter' && !isLoading) {
+        const activeEl = document.activeElement;
+        if (activeEl && activeEl.getAttribute('data-action') === 'cancel') {
+          return;
+        }
+        e.preventDefault();
+        handleConfirm();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleConfirm, isLoading]);
+
+  const getIcon = () => {
+    switch (type) {
+      case 'success':
+        return (
+          <div className="rnk-dialog-icon rnk-icon-bg-success">
+            <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+        );
+      case 'error':
+        return (
+          <div className="rnk-dialog-icon rnk-icon-bg-error">
+            <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </div>
+        );
+      case 'warning':
+        return (
+          <div className="rnk-dialog-icon rnk-icon-bg-warning">
+            <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+        );
+      case 'info':
+        return (
+          <div className="rnk-dialog-icon rnk-icon-bg-info">
+            <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+        );
+      case 'danger':
+        return (
+          <div className="rnk-dialog-icon rnk-icon-bg-danger">
+            <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+          </div>
+        );
+      case 'loading':
+        return (
+          <div className="rnk-dialog-icon rnk-icon-bg-loading">
+            <span className="rnk-spinner rnk-spinner-large"></span>
+          </div>
+        );
+      case 'question':
+      default:
+        return (
+          <div className="rnk-dialog-icon rnk-icon-bg-question">
+            <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+        );
+    }
+  };
+
+  const getButtonThemeClass = () => {
+    if (type === 'danger') return 'rnk-btn-danger';
+    if (type === 'success') return 'rnk-btn-success';
+    if (type === 'error') return 'rnk-btn-error';
+    if (type === 'warning') return 'rnk-btn-warning';
+    return 'rnk-btn-primary';
+  };
+
+  return (
+    <>
+      <div className="rnk-modal-header">
+        <h2 className="rnk-modal-title" id={`modal-title-${id}`}>
+          {title || 'Confirmation'}
+        </h2>
+        {showCloseButton && (
+          <button
+            className="rnk-modal-header-close"
+            onClick={handleCancel}
+            disabled={isLoading}
+            aria-label="Close dialog"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        )}
+      </div>
+
+      <div className="rnk-modal-body-scrollable" id={`modal-body-${id}`}>
+        <div className="rnk-dialog-layout">
+          {getIcon()}
+          <div className="rnk-dialog-details">
+            <div className="rnk-dialog-message">{message}</div>
+          </div>
+        </div>
+      </div>
+
+      <div className="rnk-modal-footer">
+        <button
+          className="rnk-btn rnk-btn-default"
+          onClick={handleCancel}
+          disabled={isLoading}
+          data-action="cancel"
+          data-testid="confirm-cancel-btn"
+        >
+          {cancelText}
+        </button>
+        <button
+          className={`rnk-btn ${getButtonThemeClass()}`}
+          onClick={handleConfirm}
+          disabled={isLoading}
+          data-action="confirm"
+          data-testid="confirm-submit-btn"
+        >
+          {isLoading && <span className="rnk-spinner" data-testid="confirm-spinner" />}
+          {confirmText}
+        </button>
+      </div>
+    </>
+  );
+};

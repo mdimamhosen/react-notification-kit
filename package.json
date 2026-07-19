@@ -1,0 +1,61 @@
+{
+  "name": "react-notification-kit",
+  "version": "1.0.0",
+  "description": "A lightweight React notification library with toast, modal, alert, confirmation dialogs, loading states, and customizable TypeScript components.",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    },
+    "./styles.css": "./dist/index.css"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "node init && tsup",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run typecheck && npm run test && npm run build"
+  },
+  "keywords": [
+    "react",
+    "notification",
+    "toast",
+    "react-toast",
+    "react toast notification",
+    "react modal",
+    "react alert",
+    "react confirmation dialog",
+    "react popup notification",
+    "react error message",
+    "react success notification",
+    "typescript react notification library",
+    "react ui components"
+  ],
+  "author": "Antigravity",
+  "license": "MIT",
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.4.2",
+    "@testing-library/react": "^14.2.1",
+    "@types/react": "^18.2.55",
+    "@types/react-dom": "^18.2.19",
+    "dotenv": "^8.2.0",
+    "happy-dom": "^13.3.8",
+    "node-fetch": "^3.3.2",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "tsup": "^8.0.2",
+    "typescript": "^5.3.3",
+    "vitest": "^1.3.1"
+  }
+}
